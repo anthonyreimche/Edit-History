@@ -1,0 +1,14 @@
+{
+  "id": "safelight.edit",
+  "name": "Edit",
+  "version": "1.0.0",
+  "description": "Undo, redo and reset actions for the current edit.",
+  "author": "Anthony Reimche",
+  "main": "dist/index.js",
+  "license": "GPL-3.0-only",
+  "categories": ["workflow"],
+  "keywords": ["undo", "redo", "reset", "history", "edit"],
+  "repository": "anthonyreimche/Edit-History",
+  "worksWith": ["anthonyreimche/Develop"],
+  "minAppVersion": "3.2.0"
+}
