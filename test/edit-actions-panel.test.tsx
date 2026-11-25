@@ -1,17 +1,20 @@
 // The Edit panel in a DOM, over a real zustand develop store: Undo and Redo
 // enabled only when there is a step to move to, Reset always, each button
 // calling its store action, and the buttons following history changes made
-// anywhere else (the keyboard shortcuts, the History list).
+// anywhere else (the keyboard shortcuts, the History list). Below them, Local
+// undo and Local redo take back or bring forward only the chosen extension's
+// own steps.
 
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { BUTTON_CLASS, EditActionsPanel, ROW_CLASS } from "../src/EditActionsPanel";
+import { EditActionsPanel, LOCAL_ROW_CLASS, ROW_CLASS } from "../src/EditActionsPanel";
+import type { LocalHistoryView } from "../src/safelight";
 import { React, initRuntime } from "../src/rt";
 import { fakeApi, type Rig } from "./support/fake-api";
 
 afterEach(cleanup);
 
-function mount(history: { steps?: number; at?: number } = {}): Rig {
+function mount(history: Parameters<typeof fakeApi>[0] = {}): Rig {
   const rig = fakeApi(history);
   initRuntime(rig.api);
   render(<EditActionsPanel />);
@@ -27,9 +30,9 @@ describe("EditActionsPanel", () => {
     mount();
     const row = document.querySelector(`.${ROW_CLASS}`);
     expect(row).not.toBeNull();
-    const buttons = [...(row?.querySelectorAll("button") ?? [])];
+    const buttons = [...(row?.querySelectorAll<HTMLButtonElement>("button") ?? [])];
     expect(buttons.map((b) => b.textContent)).toEqual(["↩ Undo", "↪ Redo", "Reset"]);
-    expect(buttons.every((b) => b.className === BUTTON_CLASS)).toBe(true);
+    expect(buttons.every((b) => b.dataset.kitVariant === "secondary" && b.dataset.kitSize === "sm")).toBe(true);
   });
 
   it("disables Undo and Redo with no photo open, and leaves Reset enabled", () => {
@@ -100,5 +103,58 @@ describe("EditActionsPanel", () => {
     expect(redo().disabled).toBe(false);
     act(() => rig.develop.setState({ history: [], historyIndex: -1 }));
     expect(redo().disabled).toBe(true);
+  });
+});
+
+describe("local undo and redo", () => {
+  const BASIC: LocalHistoryView = {
+    source: "basic",
+    name: "Basic",
+    steps: [
+      { index: 1, label: "Exposure", timestamp: 1 },
+      { index: 3, label: "Contrast", timestamp: 3 },
+    ],
+    cursor: 1,
+  };
+  const localUndo = () => screen.getByRole<HTMLButtonElement>("button", { name: "↩ Local undo" });
+  const localRedo = () => screen.getByRole<HTMLButtonElement>("button", { name: "↪ Local redo" });
+
+  it("sits in a row of its own below the global buttons, as kit buttons", () => {
+    mount({ steps: 4, local: BASIC });
+    const row = document.querySelector(`.${LOCAL_ROW_CLASS}`);
+    const buttons = [...(row?.querySelectorAll<HTMLButtonElement>("button") ?? [])];
+    expect(buttons.map((b) => b.textContent)).toEqual(["↩ Local undo", "↪ Local redo"]);
+    expect(buttons.every((b) => b.dataset.kitVariant === "secondary" && b.dataset.kitSize === "sm")).toBe(true);
+  });
+
+  it("is disabled before any extension has changed the photo", () => {
+    mount({ steps: 2 });
+    expect(localUndo().disabled).toBe(true);
+    expect(localRedo().disabled).toBe(true);
+    expect(localUndo().title).toBe("Undo the last change of the extension edited last, keeping every other tool's edits");
+  });
+
+  it("undoes while the extension has a step to take back, and redoes while it has one to bring forward", () => {
+    const rig = mount({ steps: 4, local: BASIC });
+    expect(localUndo().disabled).toBe(false);
+    expect(localRedo().disabled).toBe(true);
+    act(() => rig.local.setState({ local: { ...BASIC, cursor: -1 } }));
+    expect(localUndo().disabled).toBe(true);
+    expect(localRedo().disabled).toBe(false);
+  });
+
+  it("names the extension and the step in the tooltip", () => {
+    const rig = mount({ steps: 4, local: { ...BASIC, cursor: 0 } });
+    expect(localUndo().title).toBe("Undo Exposure in Basic only");
+    expect(localRedo().title).toBe("Redo Contrast in Basic only");
+    act(() => rig.local.setState({ local: BASIC }));
+    expect(localRedo().title).toBe("Nothing of Basic's to redo");
+  });
+
+  it("calls core's local undo and redo for the chosen extension", () => {
+    const rig = mount({ steps: 4, local: { ...BASIC, cursor: 0 } });
+    fireEvent.click(localUndo());
+    fireEvent.click(localRedo());
+    expect(rig.calls).toEqual(["localUndo basic", "localRedo basic"]);
   });
 });

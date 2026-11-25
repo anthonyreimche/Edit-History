@@ -1,7 +1,7 @@
 {
   "name": "safelight-edit-history",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Edit History extension for Safelight: undo, redo and reset for the current edit.",
   "type": "module",
   "scripts": {

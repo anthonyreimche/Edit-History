@@ -3,7 +3,8 @@
 // attribution-preservation term (GPL v3 §7b) — see LICENSE. This notice must
 // be preserved in derived versions.
 
-// Registers the Develop "Edit" panel (undo, redo, reset). It was core's
+// Registers the Develop "Edit" panel (undo, redo, reset, local undo and
+// redo). It was core's
 // built-in `core.edit` until Safelight 3.2.0 and keeps that panel id, so saved
 // layouts keep it where it was.
 
@@ -16,12 +17,12 @@ export const STYLESHEET_ID = "safelight.edit.styles";
 
 export function activate(host: SafelightAPI): void {
   initRuntime(host);
-  host.registerStylesheet({ id: STYLESHEET_ID, css: editActionsCss(host.ui.tokens) });
+  host.registerStylesheet({ id: STYLESHEET_ID, css: editActionsCss() });
   host.registerPanel({
     id: PANEL_ID,
     title: "Edit",
     component: EditActionsPanel,
-    defaultDock: { module: "develop", direction: "right", order: 0, width: 280, height: 76 },
+    defaultDock: { module: "develop", direction: "right", order: 0, width: 280, height: 108 },
     onReset: () => void host.stores.useDevelopStore.getState().reset(),
   });
 }

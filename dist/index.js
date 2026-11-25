@@ -5,56 +5,76 @@ function n(n) {
 }
 //#endregion
 //#region src/EditActionsPanel.tsx
-var r = "safelight-edit-actions", i = "safelight-edit-action";
-function a(e) {
+var r = "safelight-edit-actions", i = "safelight-edit-local-actions", a = "safelight-edit-action";
+function o() {
 	return `
 :where(.${r}) { display: flex; align-items: center; gap: 0.375rem; padding: 0.5rem; }
-:where(.${i}) { flex: 1; border-radius: 0.25rem; background-color: ${e.surface2}; padding: 0.25rem 0.5rem; font-size: 11px; color: ${e.textSecondary}; }
-@media (hover: hover) { :where(.${i}:hover) { background-color: ${e.surface3}; color: ${e.textPrimary}; } }
-:where(.${i}:disabled) { cursor: default; opacity: 0.3; }
-html.sl-larger-text .${i} { font-size: 13px !important; line-height: 1.45 !important; }
+:where(.${i}) { display: flex; align-items: center; gap: 0.375rem; padding: 0 0.5rem 0.5rem; }
+:where(.${a}) { flex: 1; }
 `;
 }
-function o() {
-	let n = t.stores.useDevelopStore, a = n((e) => e.reset), o = n((e) => e.undo), s = n((e) => e.redo), c = n((e) => e.historyIndex), l = n((e) => e.history.length), u = c > 0, d = c < l - 1;
-	return /* @__PURE__ */ e.createElement("div", { className: r }, /* @__PURE__ */ e.createElement("button", {
-		onClick: o,
-		disabled: !u,
-		className: i,
-		title: "Undo"
-	}, "↩", " Undo"), /* @__PURE__ */ e.createElement("button", {
+function s() {
+	let { Button: n } = t.ui, i = t.stores.useDevelopStore, o = i((e) => e.reset), s = i((e) => e.undo), l = i((e) => e.redo), u = i((e) => e.historyIndex), d = i((e) => e.history.length), f = u > 0, p = u < d - 1;
+	return /* @__PURE__ */ e.createElement("div", null, /* @__PURE__ */ e.createElement("div", { className: r }, /* @__PURE__ */ e.createElement(n, {
+		size: "sm",
+		className: a,
 		onClick: s,
-		disabled: !d,
-		className: i,
+		disabled: !f,
+		title: "Undo"
+	}, "↩", " Undo"), /* @__PURE__ */ e.createElement(n, {
+		size: "sm",
+		className: a,
+		onClick: l,
+		disabled: !p,
 		title: "Redo"
-	}, "↪", " Redo"), /* @__PURE__ */ e.createElement("button", {
-		onClick: a,
-		className: i,
+	}, "↪", " Redo"), /* @__PURE__ */ e.createElement(n, {
+		size: "sm",
+		className: a,
+		onClick: o,
 		title: "Reset all edits"
-	}, "Reset"));
+	}, "Reset")), /* @__PURE__ */ e.createElement(c, null));
+}
+function c() {
+	let { Button: n } = t.ui, r = t.stores.useDevelopStore((e) => e.localUndo), o = t.stores.useDevelopStore((e) => e.localRedo), s = t.develop.useLocalHistory(t.develop.useChosenHistorySource()), c = s?.steps[s.cursor], u = s?.steps[s.cursor + 1];
+	return /* @__PURE__ */ e.createElement("div", { className: i }, /* @__PURE__ */ e.createElement(n, {
+		size: "sm",
+		className: a,
+		onClick: () => s && void r(s.source),
+		disabled: !c,
+		title: l(s, c && `Undo ${c.label}`, "undo")
+	}, "↩", " Local undo"), /* @__PURE__ */ e.createElement(n, {
+		size: "sm",
+		className: a,
+		onClick: () => s && void o(s.source),
+		disabled: !u,
+		title: l(s, u && `Redo ${u.label}`, "redo")
+	}, "↪", " Local redo"));
+}
+function l(e, t, n) {
+	return e ? t ? `${t} in ${e.name} only` : `Nothing of ${e.name}'s to ${n}` : "Undo the last change of the extension edited last, keeping every other tool's edits";
 }
 //#endregion
 //#region src/index.tsx
-var s = "core.edit", c = "safelight.edit.styles";
-function l(e) {
+var u = "core.edit", d = "safelight.edit.styles";
+function f(e) {
 	n(e), e.registerStylesheet({
-		id: c,
-		css: a(e.ui.tokens)
+		id: d,
+		css: o()
 	}), e.registerPanel({
-		id: s,
+		id: u,
 		title: "Edit",
-		component: o,
+		component: s,
 		defaultDock: {
 			module: "develop",
 			direction: "right",
 			order: 0,
 			width: 280,
-			height: 76
+			height: 108
 		},
 		onReset: () => void e.stores.useDevelopStore.getState().reset()
 	});
 }
 //#endregion
-export { s as PANEL_ID, c as STYLESHEET_ID, l as activate };
+export { u as PANEL_ID, d as STYLESHEET_ID, f as activate };
 
 //# sourceMappingURL=index.js.map

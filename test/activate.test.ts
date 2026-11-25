@@ -16,7 +16,7 @@ describe("activate", () => {
       id: "core.edit",
       title: "Edit",
       component: EditActionsPanel,
-      defaultDock: { module: "develop", direction: "right", order: 0, width: 280, height: 76 },
+      defaultDock: { module: "develop", direction: "right", order: 0, width: 280, height: 108 },
       onReset: expect.any(Function),
     });
     expect(PANEL_ID).toBe("core.edit");
@@ -30,24 +30,21 @@ describe("activate", () => {
     expect(rig.develop.getState().history.map((s) => s.label)).toEqual(["Step 0", "Step 1", "Reset"]);
   });
 
-  it("registers one stylesheet for the panel's classes, coloured from the theme tokens", () => {
+  it("registers one stylesheet for the panel's layout and leaves colour to the kit buttons", () => {
     const rig = fakeApi();
     activate(rig.api);
     expect(rig.stylesheets.map((s) => s.id)).toEqual([STYLESHEET_ID]);
     const css = rig.stylesheets[0].css;
     expect(css).toContain(`:where(.${ROW_CLASS}) {`);
     expect(css).toContain(`:where(.${BUTTON_CLASS}) {`);
-    expect(css).toContain("background-color: var(--color-surface-2)");
-    expect(css).toContain("color: var(--color-text-secondary)");
-    expect(css).toContain(`:where(.${BUTTON_CLASS}:hover) { background-color: var(--color-surface-3); color: var(--color-text-primary); }`);
-    expect(css).toContain(`:where(.${BUTTON_CLASS}:disabled) { cursor: default; opacity: 0.3; }`);
+    expect(css).not.toContain("color");
   });
 
   it("keeps the button rules at zero specificity, below any stylesheet that restyles buttons", () => {
     const rig = fakeApi();
     activate(rig.api);
     const rules = rig.stylesheets[0].css.split("\n").filter((line) => line.includes(BUTTON_CLASS));
-    const plain = rules.filter((line) => !line.includes(":where(") && !line.startsWith("html.sl-larger-text"));
+    const plain = rules.filter((line) => !line.includes(":where("));
     expect(plain).toEqual([]);
   });
 });

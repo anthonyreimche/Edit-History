@@ -8,7 +8,7 @@
 // src/state/develop-store.ts. Extensions are standalone bundles, so the host's
 // source is not on the type path; React types come from @types/react (dev only).
 
-import type { ComponentType } from "react";
+import type { ButtonHTMLAttributes, ComponentType, JSX } from "react";
 
 export interface StoreApi<T> {
   (): T;
@@ -34,6 +34,27 @@ export interface DevelopStoreState {
   redo(): void;
   /** Start the photo over at its defaults, as one undoable step. */
   reset(): Promise<void>;
+  /** Take back or bring forward one of `source`'s own steps, as a step that
+   *  keeps every other tool's edits (Safelight 3.2.8). */
+  localUndo(source: string): Promise<void>;
+  localRedo(source: string): Promise<void>;
+}
+
+/** One step an extension made. */
+export interface LocalStep {
+  index: number;
+  label: string;
+  timestamp: number;
+}
+
+/** An extension's local history on the open photo (Safelight 3.2.8). */
+export interface LocalHistoryView {
+  source: string;
+  name: string;
+  /** Its steps, oldest first; those past `cursor` are its redo. */
+  steps: LocalStep[];
+  /** The step its settings show now, -1 before its first. */
+  cursor: number;
 }
 
 export interface PanelDockDefault {
@@ -62,12 +83,15 @@ export interface StylesheetContribution {
   css: string;
 }
 
-/** The theme's CSS variables as `var(--color-…)` strings. */
-export interface UiTokens {
-  readonly surface2: string;
-  readonly surface3: string;
-  readonly textPrimary: string;
-  readonly textSecondary: string;
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: ButtonVariant;
+  size?: "sm" | "md";
+  /** Render as the selected/active state (accent fill), overriding the variant. */
+  active?: boolean;
+  /** Stretch to the container width. */
+  full?: boolean;
 }
 
 export interface SafelightAPI {
@@ -76,9 +100,15 @@ export interface SafelightAPI {
   react: typeof import("react");
   registerPanel(c: PanelContribution): void;
   registerStylesheet(c: StylesheetContribution): void;
-  ui: { tokens: UiTokens };
+  ui: { Button: (props: ButtonProps) => JSX.Element };
   stores: {
     useDevelopStore: StoreApi<DevelopStoreState>;
+  };
+  /** Local history (Safelight 3.2.8). */
+  develop: {
+    useLocalHistory(source: string | null): LocalHistoryView | null;
+    /** The latest edited extension, or the one picked in the History panel. */
+    useChosenHistorySource(): string | null;
   };
 }
 

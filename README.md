@@ -7,6 +7,11 @@ editing.
   Each is greyed out when there is no step to move to.
 - **Reset:** start the photo over at its defaults. The reset is a history
   step of its own, so Undo brings the edit back.
+- **Local undo / Local redo:** take back or bring forward only the last
+  change of one extension, keeping every other tool's edits. It is the
+  extension you edited last, or the one picked on the History panel's Local
+  tab. Hover a button to see which step it moves. Each is a new history step,
+  so the global Undo takes it back. Needs Safelight 3.2.8 or later.
 
 Right-clicking the panel's header offers the same reset.
 
