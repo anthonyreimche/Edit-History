@@ -23,6 +23,7 @@ export function activate(host: SafelightAPI): void {
     title: "Edit",
     component: EditActionsPanel,
     defaultDock: { module: "develop", direction: "right", order: 0, width: 280, height: 108 },
+    modules: ["develop"],
     onReset: () => void host.stores.useDevelopStore.getState().reset(),
   });
 }

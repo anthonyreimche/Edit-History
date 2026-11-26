@@ -71,6 +71,7 @@ function f(e) {
 			width: 280,
 			height: 108
 		},
+		modules: ["develop"],
 		onReset: () => void e.stores.useDevelopStore.getState().reset()
 	});
 }

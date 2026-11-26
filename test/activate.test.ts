@@ -17,6 +17,7 @@ describe("activate", () => {
       title: "Edit",
       component: EditActionsPanel,
       defaultDock: { module: "develop", direction: "right", order: 0, width: 280, height: 108 },
+      modules: ["develop"],
       onReset: expect.any(Function),
     });
     expect(PANEL_ID).toBe("core.edit");
